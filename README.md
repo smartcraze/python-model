@@ -1,64 +1,224 @@
 
+
 # 🚀 Disease Outbreak Prediction API
 
-This project provides a **FastAPI service** that predicts outbreak risk for a given date using a trained **LightGBM model**.
+This project provides a **FastAPI** service for predicting disease outbreak risk using a trained **LightGBM** model. The API exposes multiple endpoints for predictions, analytics, and feature insights.
 
 ---
 
 ## 📦 Requirements
 
-* Python **3.12** (recommended)
-* [pip](https://pip.pypa.io/en/stable/) or [uv](https://github.com/astral-sh/uv) for dependency management
-* A working internet connection for installing packages
+- Python **3.12** (recommended)
+- [pip](https://pip.pypa.io/en/stable/) or [uv](https://github.com/astral-sh/uv) for dependency management
+- A working internet connection for installing packages
 
 ---
 
 ## ⚙️ Setup
 
-1. **Clone the repo**
-
+1. **Clone the repository**
    ```bash
    git clone https://github.com/your-username/python-model.git
    cd python-model
    ```
-
 2. **Create a virtual environment**
-
    ```bash
    python3 -m venv venv
-   source venv/bin/activate   # on Linux/Mac
-   venv\Scripts\activate      # on Windows
+   source venv/bin/activate   # Linux/Mac
+   venv\Scripts\activate      # Windows
    ```
-
 3. **Install dependencies**
-
    ```bash
    pip install -r requirements.txt
    ```
-
 4. **Check installed versions**
-
    ```bash
    pip show lightgbm scikit-learn fastapi uvicorn pandas
    ```
-
-   > Make sure `lightgbm` and `scikit-learn` match the versions used during training.
+   > Ensure `lightgbm` and `scikit-learn` match the versions used during model training.
 
 ---
 
 ## ▶️ Running the API
 
 Start the server with:
-
 ```bash
 uvicorn main:app --reload
 ```
+The API will run at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
-The API will run at:
-👉 `http://127.0.0.1:8000`
+Interactive API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-Interactive API docs available at:
-👉 `http://127.0.0.1:8000/docs`
+---
+
+## 📖 API Endpoints
+
+### 1. Health Check
+**GET /**
+
+Returns a simple message to confirm the API is running.
+
+**Response:**
+```json
+{ "message": "Outbreak Prediction API is running" }
+```
+
+---
+
+### 2. Predict Outbreak for a Date
+**GET /predict?date=YYYY-MM-DD**
+
+Predicts outbreak risk for a specific date.
+
+**Query Parameters:**
+- `date` (str, required): Date in `YYYY-MM-DD` format.
+
+**Example:**
+```bash
+curl "http://127.0.0.1:8000/predict?date=2025-09-29"
+```
+
+**Response:**
+```json
+{
+  "prediction": 0.151,
+  "metrics": {
+    "population": 3000,
+    "water_ph": 6.91,
+    "turbidity": 3.66,
+    "reported_cases_7d": 376,
+    "true_cases_7d": 618
+  }
+}
+```
+
+---
+
+### 3. Predict Outbreak for a Date Range
+**GET /predict-range?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD**
+
+Returns predictions for all dates in the specified range.
+
+**Query Parameters:**
+- `start_date` (str, required): Start date in `YYYY-MM-DD` format
+- `end_date` (str, required): End date in `YYYY-MM-DD` format
+
+**Example:**
+```bash
+curl "http://127.0.0.1:8000/predict-range?start_date=2025-05-01&end_date=2025-05-15"
+```
+
+**Response:**
+```json
+{
+  "predictions": [
+    {
+      "date": "2025-05-01",
+      "prediction": 0.0026,
+      "reported_cases": 56,
+      "true_cases": 79
+    },
+    ...
+  ]
+}
+```
+
+---
+
+### 4. Water Quality vs Cases
+**GET /water-vs-cases**
+
+Returns time series data for water quality metrics and reported/true cases.
+
+**Response:**
+```json
+{
+  "water_cases_data": [
+    {
+      "date": "2025-01-01T00:00:00",
+      "water_ph_avg": 7.12,
+      "water_turbidity_avg": 1.84,
+      "contamination_avg": 0.38,
+      "reported_cases": 0,
+      "true_cases": 14
+    },
+    ...
+  ]
+}
+```
+
+---
+
+### 5. Feature Importance
+**GET /feature-importance**
+
+Returns the top 10 most important features used by the model.
+
+**Response:**
+```json
+{
+  "feature_importance": [
+    ["water_ph_avg", 567],
+    ["true_cases", 555],
+    ...
+  ]
+}
+```
+
+---
+
+### 6. Area-wise Trends
+**GET /area-trends**
+
+Returns aggregated statistics for each area.
+
+**Response:**
+```json
+{
+  "area_stats": [
+    {
+      "area": "Village_B",
+      "true_cases": 60520,
+      "reported_cases": 36348,
+      "population": 3000
+    },
+    ...
+  ]
+}
+```
+
+---
+
+## ⚠️ Common Issues
+
+- **Unknown datetime string format**: Use `YYYY-MM-DD` for all date parameters.
+- **'super' object has no attribute 'get_params'**: Version mismatch between `scikit-learn` / `lightgbm`. Fix by reinstalling:
+  ```bash
+  pip install scikit-learn==1.2.2 lightgbm==3.3.5
+  ```
+- **404 Not Found at `/favicon.ico`**: Ignore, this is just the browser requesting a favicon.
+
+---
+
+## 📂 Project Structure
+
+```
+python-model/
+│── main.py           # FastAPI app
+│── model_utils.py    # Prediction logic
+│── lgbm_model.pkl    # Saved LightGBM model
+│── requirements.txt  # Python dependencies
+│── README.md         # Project guide
+│── Village B.xls     # Input data
+```
+
+---
+
+## 🛠️ Next Steps
+
+- Add more input features (not just date)
+- Deploy to cloud (Heroku, Render, or AWS)
+- Improve error handling and logging
 
 ---
 
